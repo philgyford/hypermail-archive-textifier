@@ -113,11 +113,13 @@ class Textifier(object):
 
         url_parts = urlparse.urlsplit(url).path.split('/')
         # Get '2016Mar' from 'http://.../2016Mar/0002.html':
-        directory = url_parts[-2:-1][0]
+        month = url_parts[-2:-1][0]
         # Get '0002.html' from 'http://.../2016Mar/0002.html':
         filename = url_parts[-1:][0]
         # Change '0002.html' to '0002.txt':
-        filename = '%s.txt' % os.path.splitext(filename)[0]
+        save_filename = '%s.txt' % os.path.splitext(filename)[0]
+        # End up with '2016Mar_0002.html':
+        save_filename = '%s_%s' % (month, save_filename)
 
         source = self.fetchPage(url)
         soup = BeautifulSoup(source, 'html.parser')
@@ -137,27 +139,21 @@ class Textifier(object):
         #   <ul class="links">
         #       <a href="0002.html">In reply to</a>
         # And gets the '0002.html', and adds a line like this to headers:
-        # Reply-To: 2016Mar/0002.txt
+        # Reply-To: 2016Mar_0002.txt
         for a in soup.find(id='navbar').find(class_='links').find_all('a'):
             if a.get_text() == 'In reply to':
-                # Change '0002.html' to '0002.txt':
-                html_filename = a.get('href')
-                txt_filename = '%s.txt' % os.path.splitext(html_filename)[0]
-
-                reply_path = os.path.join(directory, txt_filename)
-                headers = '%s\nReply-To: %s' % (headers, reply_path)
+                # e.g. '0002.html':
+                href = a.get('href')
+                # e.g. '2016Mar_0002.txt':
+                reply_to_filename = '%s_%s.txt' % (
+                                            month, os.path.splitext(href)[0])
+                headers = '%s\nReply-To: %s' % (headers, reply_to_filename)
                 break
 
         txt = "%s\n%s" % (headers, body)
 
-        try:
-            # Make the '2016Mar' directory in our overall save directory:
-            os.mkdir(os.path.join(self.save_path, directory))
-        except OSError:
-            pass
-
         file = codecs.open(
-                        os.path.join(self.save_path, directory, filename),
+                        os.path.join(self.save_path, save_filename),
                         'w',
                         encoding='utf-8')
         file.write(txt)

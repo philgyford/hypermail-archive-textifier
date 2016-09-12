@@ -15,19 +15,19 @@ Scrapes a Hypermail archive web page and saves all of the messages into individu
 
         $ python textify.py
 
+The script pauses for half a second between fetching each message, so as not to hammer the archive's servers, so it may take a while.
+
 
 ## Results
 
-All being well you will end up with a `messages` directory in the same directory as the script. This will contain one directory per month, each one containing one text file per message. e.g.:
+All being well you will end up with a `messages` directory in the same directory as the script. This will contain one text file per message. e.g.:
 
     messages/
-    ├── 2012Jul/
-	│   ├── 0000.txt
-	│   └── 0001.txt
-	├── 2012Aug/
-	│   ├── 0000.txt
-	│   ├── 0001.txt
-	│   └── 0002.txt
+    ├── 2012Aug_0000.txt
+    ├── 2012Aug_0001.txt
+    ├── 2012Aug_0002.txt
+    ├── 2012Jul_0000.txt
+    ├── 2012Jul_0001.txt
 
 And so on.
 
