@@ -7,27 +7,27 @@ Scrapes a Hypermail archive web page and saves all of the messages into individu
 
 1. Install the required modules using [pip](https://pip.pypa.io/en/stable/):
 
-	$ pip install -r requirements.txt
+        $ pip install -r requirements.txt
 
 2. In `textify.py` set the URL of the archive you want to scrape.
 
 3. Run the script:
 
-	$ python textify.py
+        $ python textify.py
 
 
 ## Results
 
 All being well you will end up with a `messages` directory in the same directory as the script. This will contain one directory per month, each one containing one text file per message. e.g.:
 
-	messages/
-		2012Jul/
-			0000.txt
-			0001.txt
-		2012Aug/
-			0000.txt
-			0001.txt
-			0002.txt
+    messages/
+    ├── 2012Jul/
+	│   ├── 0000.txt
+	│   └── 0001.txt
+	├── 2012Aug/
+	│   ├── 0000.txt
+	│   ├── 0001.txt
+	│   └── 0002.txt
 
 And so on.
 
