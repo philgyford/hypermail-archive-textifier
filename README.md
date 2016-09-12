@@ -1,6 +1,6 @@
-# Mailman archive textifier
+# Hypermail archive textifier
 
-Scrapes a Mailman archive web page and saves all of the messages into individual plaintext files.
+Scrapes a Hypermail archive web page and saves all of the messages into individual plaintext files.
 
 
 ## Usage
@@ -57,5 +57,5 @@ If the archive page indicated that the email was a reply to an earlier email, th
 
 ## Caveats
 
-This has only been run on one archive ( https://lists.w3.org/Archives/Public/public-restrictedmedia/ ) and others, with different versions of Mailman might not work. For example, their HTML might different, breaking the scraping of the pages that this script does.
+This has only been run on one archive ( https://lists.w3.org/Archives/Public/public-restrictedmedia/ ) and others, with different versions of Hypermail might not work. For example, their HTML might different, breaking the scraping of the pages that this script does.
 
