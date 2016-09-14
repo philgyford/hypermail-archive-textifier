@@ -31,26 +31,26 @@ And so on.
 
 Each text file will contain the message headers included on the web archive, followed by a blank line, followed by the message. e.g.:
 
-	From: Bob Ferris <robert.ferris.notreally@gmail.com>
-	Date: Fri, 12 Dec 2014 13:08:02 -0700
-	Message-ID: <3B3684E6-365B-45EC-8259-7D474C87E992@apple.com>
-	To: public-testlist@example.org
+    From: Bob Ferris <robert.ferris.notreally@gmail.com>
+    Date: Fri, 12 Dec 2014 13:08:02 -0700
+    Message-ID: <3B3684E6-365B-45EC-8259-7D474C87E992@apple.com>
+    To: public-testlist@example.org
 
-	Hello,
+    Hello,
 
-	Here's the start of an example email.
+    Here's the start of an example email.
 
 If the archive page indicated that the email was a reply to an earlier email, the header information will have an extra `In-Reply-To` line, containing the Message-ID of the replied-to message:
 
-	In-Reply-To: <01b901cf2a88$6ceb42f0$46c1c8d0$@com>
-	From: Bob Ferris <robert.ferris.notreally@gmail.com>
-	Date: Fri, 12 Dec 2014 13:08:02 -0700
-	Message-ID: <3B3684E6-365B-45EC-8259-7D474C87E992@apple.com>
-	To: public-testlist@example.org
+    In-Reply-To: <01b901cf2a88$6ceb42f0$46c1c8d0$@com>
+    From: Bob Ferris <robert.ferris.notreally@gmail.com>
+    Date: Fri, 12 Dec 2014 13:08:02 -0700
+    Message-ID: <3B3684E6-365B-45EC-8259-7D474C87E992@apple.com>
+    To: public-testlist@example.org
 
-	Hello,
+    Hello,
 
-	Here's the start of an example email.
+    Here's the start of an example email.
 
 
 ## Caveats
