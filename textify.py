@@ -2,13 +2,18 @@
 from bs4 import BeautifulSoup
 import codecs
 import logging
-import mechanize
 import os
 import re
+import requests
 import sys
 import time
-from urllib2 import HTTPError
-import urlparse
+
+try:
+    # Python 2
+    from urlparse import urljoin, urlsplit
+except ImportError:
+    # Python 3
+    from urllib.parse import urljoin, urlsplit
 
 
 # The URL of the front page of the Mailman archive.
@@ -55,7 +60,7 @@ class Textifier(object):
 
         try:
             os.mkdir(self.save_path)
-        except OSError, e:
+        except OSError as e:
             if os.path.exists(self.save_path):
                 self.error("The '%s' directory already exists. Please move or rename it and try again." % config['save_directory'])
             else:
@@ -83,17 +88,20 @@ class Textifier(object):
         """
         Returns a list of URLs for month archives, in chronological order.
         """
-        source = self.fetchPage(url)
-        soup = BeautifulSoup(source, 'html.parser')
+        month_urls = ['https://lists.w3.org/Archives/Public/public-restrictedmedia/2013Jul/']
 
-        month_urls = []
+        #source = self.fetchPage(url)
 
-        for row in soup.table.find_all('tr'):
-            try:
-                path = row.find_all('td')[0].a.get('href')
-                month_urls.append( urlparse.urljoin(url, path) )
-            except IndexError:
-                pass # First row only has <th>s.
+        #if source is not None:
+            #soup = BeautifulSoup(source, 'html.parser')
+
+
+            #for row in soup.table.find_all('tr'):
+                #try:
+                    #path = row.find_all('td')[0].a.get('href')
+                    #month_urls.append( urljoin(url, path) )
+                #except IndexError:
+                    #pass # First row only has <th>s.
 
         return list(reversed(month_urls))
 
@@ -101,40 +109,49 @@ class Textifier(object):
         """
         Returns a list of URLs of individual messages, in chronological order.
         """
-        source = self.fetchPage(url)
-        soup = BeautifulSoup(source, 'html.parser')
-
         message_urls = []
 
-        # Messages are listed in this structure:
-        #<div class="messages-list">
-        #    <ul>
-        #        <li><a></a>Name of day
-        #            <ul>
-        #                <li><a href="0001.html">Subject</a></li>
-        #                <li><a href="0000.html">Subject</a></li>
-        #            </ul>
-        #        </li>
-        #        ...
-        #    </ul>
-        #</div>
-        for day in soup.find(class_='messages-list').find_all('li'):
-            for message in day.find_all('li'):
-                path = message.a.get('href')
-                message_urls.append( urlparse.urljoin(url, path) )
+        source = self.fetchPage(url)
+
+        if source is not None:
+            soup = BeautifulSoup(source, 'html.parser')
+
+
+            # Messages are listed in this structure:
+            #<div class="messages-list">
+            #    <ul>
+            #        <li><a></a>Name of day
+            #            <ul>
+            #                <li><a href="0001.html">Subject</a></li>
+            #                <li><a href="0000.html">Subject</a></li>
+            #            </ul>
+            #        </li>
+            #        ...
+            #    </ul>
+            #</div>
+            for day in soup.find(class_='messages-list').find_all('li'):
+                for message in day.find_all('li'):
+                    path = message.a.get('href')
+                    message_urls.append( urljoin(url, path) )
 
         return list(reversed(message_urls))
 
     def scrapeMessage(self, url):
+        """
+        Fetches and saves a single message.
+        """
 
         # Get ['2016Mar', '0002.html'] from 'http://.../2016Mar/0002.html':
-        url_parts = urlparse.urlsplit(url).path.split('/')
+        url_parts = urlsplit(url).path.split('/')
         month = url_parts[-2:-1][0]
         filename = url_parts[-1:][0]
         # For putting the Message Id in self.name_to_id:
         message_name = '%s/%s' % (month, filename)
 
         source = self.fetchPage(url)
+        if source is None:
+            return # Couldn't fetch the page.
+
         soup = BeautifulSoup(source, 'html.parser')
 
         # The message, including headers:
@@ -183,7 +200,7 @@ class Textifier(object):
                 if reply_to_link.startswith('http'):
                     # Probably like 'https://www.w3.org/mid/CAEnTvdCE9nprxRAikQmyAp19XkNZG=z-vUErs8c4Ho_y6DD0GA@mail.gmail.com'
 
-                    reply_to_id = urlparse.urlsplit(reply_to_link).path.split('/')[-1:][0]
+                    reply_to_id = urlsplit(reply_to_link).path.split('/')[-1:][0]
                     headers = 'In-Reply-To: <%s>\n%s' % (reply_to_id, headers)
 
                 else:
@@ -194,7 +211,6 @@ class Textifier(object):
                     self.replies[message_id] = reply_to_name
 
                 break
-
 
         txt = "%s\n%s" % (headers, body)
 
@@ -222,7 +238,7 @@ class Textifier(object):
 
         # Go through each message that's a reply.
         # Get its ID and the message_name of what it's replying to:
-        for message_id, message_name in self.replies.iteritems():
+        for (message_id, message_name) in self.replies.items():
 
             # Get the Message-ID from the name (like '2016/Mar/0002.html'):
             reply_to_id = self.name_to_id[message_name]
@@ -239,23 +255,20 @@ class Textifier(object):
                 f.truncate()
 
     def fetchPage(self, url):
-        "Used for fetching all the remote pages."
+        """
+        Used for fetching all the remote pages.
+        Returns the contents of the page, or None if something goes wrong.
+        """
 
         self.message("Fetching " + url)
-        fp = None
-        try:
-            fp = mechanize.urlopen(url)
-            source = fp.read()
-        except HTTPError as e:
-            self.error("Failed to fetch %s, HTTP status %s" % \
-                                                    (e.filename, str(e.code)),
-                        fatal=False)
-            return None
-        finally:
-            if fp:
-                fp.close()
 
-        return source
+        try:
+            r = requests.get(url)
+            r.raise_for_status() # Raises an exception on HTTP error.
+            return r.text
+        except requests.exceptions.RequestException as e:
+            self.error("Failed to fetch: %s" % (str(e)), fatal=False)
+            return None
 
     def message(self, text):
         "Output debugging info."

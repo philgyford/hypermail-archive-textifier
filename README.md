@@ -2,6 +2,8 @@
 
 Scrapes a Hypermail archive web page and saves all of the messages into individual plaintext files.
 
+Works with Python 2.7 and 3.5 (I haven't tried others).
+
 
 ## Usage
 
